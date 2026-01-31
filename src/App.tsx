@@ -3,6 +3,7 @@ import "@xyflow/react/dist/style.css";
 import useMaterias from "./hooks/useMaterias";
 import { LayoutGrid } from "lucide-react";
 import Menu from "./components/Menu";
+import { useCallback } from "react";
 
 export default function App() {
   const {
@@ -16,7 +17,13 @@ export default function App() {
     obtenerMateriasPrevias,
     materias,
   } = useMaterias();
-
+  const onNodeDragStop = useCallback((_: any, node: any) => {
+    const posiciones = JSON.parse(
+      localStorage.getItem("nodos-posiciones") || "{}",
+    );
+    posiciones[node.id] = node.position;
+    localStorage.setItem("nodos-posiciones", JSON.stringify(posiciones));
+  }, []);
   return (
     <div
       style={{ width: "100vw", height: "100vh", backgroundColor: "#000000" }}
@@ -28,6 +35,9 @@ export default function App() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         fitView
+        minZoom={0.3}
+        maxZoom={1.5}
+        onNodeDragStop={onNodeDragStop}
       >
         <Background gap={20} />
 

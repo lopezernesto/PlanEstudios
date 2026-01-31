@@ -1,11 +1,19 @@
 import { useEffect, useState } from "react";
 import { Handle, Position } from "@xyflow/react";
 import type { MateriaData, EstadoMateria } from "../types/Materia";
-import { Award, CircleCheck, RotateCcw } from "lucide-react";
+import {
+  Award,
+  CircleCheck,
+  MoreVertical,
+  Pencil,
+  RotateCcw,
+  Trash2,
+} from "lucide-react";
 
 interface MateriaNodeProps {
   data: MateriaData & {
     actualizar: (id: string, estado: EstadoMateria) => void;
+    borrar: (id: string) => void;
   };
 }
 
@@ -13,6 +21,18 @@ export function MateriaNode({ data }: MateriaNodeProps) {
   //Logicas para girar y para la animacion de materia desbloqueada
   const [isFlipped, setIsFlipped] = useState(false);
   const [isUnlocking, setIsUnlocking] = useState(false);
+
+  const handleBorrar = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Evita que se disparen eventos del nodo
+    if (window.confirm(`¿Seguro que querés borrar ${data.nombre}?`)) {
+      data.borrar(data.id);
+    }
+  };
+
+  const handleEditar = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    //data.abrirEdicion(data); // Paso toda la data al sidebar de edición
+  };
 
   // Efecto para cuando habilitas una materia
   useEffect(() => {
@@ -53,7 +73,7 @@ export function MateriaNode({ data }: MateriaNodeProps) {
   };
 
   return (
-    <div className="w-48 h-64 perspective-1000">
+    <div className="group w-48 h-64 perspective-1000">
       {/* Conectores para las flechas */}
       <Handle
         type="target"
@@ -68,6 +88,23 @@ export function MateriaNode({ data }: MateriaNodeProps) {
         <div
           className={`absolute inset-0 backface-hidden flex flex-col items-center justify-between p-3 rounded-lg border-4 shadow-xl ${colorClasses[data.estado]}`}
         >
+          {/* Botones de borrar y editar */}
+          <div className="absolute -top-10 right-0 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <button
+              onClick={handleEditar}
+              className="bg-slate-800 p-2 rounded-lg border border-white/10 text-blue-400 hover:bg-blue-600 hover:text-white transition-all shadow-lg"
+              title="Editar"
+            >
+              <Pencil size={14} />
+            </button>
+            <button
+              onClick={handleBorrar}
+              className="bg-slate-800 p-2 rounded-lg border border-white/10 text-rose-400 hover:bg-rose-600 hover:text-white transition-all shadow-lg"
+              title="Borrar"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
           {/* Nombre */}
           <div
             className="flex-1 flex items-center justify-center text-center font-bold cursor-pointer px-2"
@@ -75,8 +112,7 @@ export function MateriaNode({ data }: MateriaNodeProps) {
           >
             {data.nombre}
           </div>
-
-          {/* Botones */}
+          {/* Botones de las cartas*/}
           <div className="flex gap-2 justify-center pb-2">
             {data.estado !== "BLOQUEADA" ? (
               <>

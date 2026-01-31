@@ -9,7 +9,7 @@ interface Props {
   obtenerMateriasPrevias: (anio: number, cuatri: number) => MateriaData[];
   materias: MateriaData[];
 }
-
+const MAX_ANIOS = 5;
 export default function SidebarMateria({
   isOpen,
   onClose,
@@ -30,6 +30,8 @@ export default function SidebarMateria({
   const [correlativasF, setCorrelativasF] = useState<MateriaData[]>([]);
 
   const [errorNombre, setErrorNombre] = useState<string | null>(null);
+
+  const aniosDisponibles = Array.from({ length: MAX_ANIOS }, (_, i) => i + 1);
 
   // Logica de filtrado para el buscador
   const sugerencias = useMemo(() => {
@@ -140,7 +142,7 @@ export default function SidebarMateria({
             Año de la Materia
           </label>
           <div className="flex gap-2 mt-3">
-            {[1, 2, 3, 4, 5].map((n) => (
+            {aniosDisponibles.map((n) => (
               <button
                 key={n}
                 onClick={() => setAnio(n)}
