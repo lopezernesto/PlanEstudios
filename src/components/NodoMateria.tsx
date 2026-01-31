@@ -1,14 +1,7 @@
 import { useEffect, useState } from "react";
 import { Handle, Position } from "@xyflow/react";
 import type { MateriaData, EstadoMateria } from "../types/Materia";
-import {
-  Award,
-  CircleCheck,
-  MoreVertical,
-  Pencil,
-  RotateCcw,
-  Trash2,
-} from "lucide-react";
+import { Award, CircleCheck, Pencil, RotateCcw, Trash2 } from "lucide-react";
 
 interface MateriaNodeProps {
   data: MateriaData & {

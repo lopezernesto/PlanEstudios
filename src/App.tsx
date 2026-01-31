@@ -1,4 +1,10 @@
-import { ReactFlow, Background, Controls, ControlButton } from "@xyflow/react";
+import {
+  ReactFlow,
+  Background,
+  Controls,
+  ControlButton,
+  type Viewport,
+} from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import useMaterias from "./hooks/useMaterias";
 import { LayoutGrid } from "lucide-react";
@@ -17,6 +23,16 @@ export default function App() {
     obtenerMateriasPrevias,
     materias,
   } = useMaterias();
+  // Recupera el viewport guardado o usa uno por defecto
+  const initialViewport: Viewport = JSON.parse(
+    localStorage.getItem("react-flow-viewport") ||
+      '{"x": 350, "y": 60, "zoom": 0.8}',
+  );
+
+  // Guarda la posición de la cámara y el zoom al terminar de moverlo
+  const onMoveEnd = useCallback((_: any, viewport: Viewport) => {
+    localStorage.setItem("react-flow-viewport", JSON.stringify(viewport));
+  }, []);
   const onNodeDragStop = useCallback((_: any, node: any) => {
     const posiciones = JSON.parse(
       localStorage.getItem("nodos-posiciones") || "{}",
@@ -34,7 +50,8 @@ export default function App() {
         nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        fitView
+        defaultViewport={initialViewport}
+        onMoveEnd={onMoveEnd}
         minZoom={0.3}
         maxZoom={1.5}
         onNodeDragStop={onNodeDragStop}

@@ -30,10 +30,22 @@ export default function useMaterias() {
     const guardado = localStorage.getItem("materias-data");
     return guardado ? JSON.parse(guardado) : materiasIniciales;
   });
+
   useEffect(() => {
     localStorage.setItem("materias-data", JSON.stringify(materias));
   }, [materias]);
+
   const [arcos, setArcos] = useState<Edge[]>([]);
+
+  // Handlers React Flow
+  const onNodesChange: OnNodesChange<Node> = useCallback(
+    (changes) => setNodos((nds) => applyNodeChanges(changes, nds)),
+    [],
+  );
+  const onEdgesChange: OnEdgesChange = useCallback(
+    (changes) => setArcos((eds) => applyEdgeChanges(changes, eds)),
+    [],
+  );
 
   //Logica de arcos automaticos
   const generarArcosAutomaticos = useCallback(
@@ -114,7 +126,7 @@ export default function useMaterias() {
             width: anchoDinamico,
             height: 680,
             backgroundColor: "rgba(255, 255, 255, 0.03)", // Fondo casi invisible
-            backdropFilter: "blur(4px)", // Difumina los puntitos del fondo
+            //backdropFilter: "blur(4px)", // Difumina los puntitos del fondo
             borderRadius: "24px",
             border: "1px solid rgba(255, 255, 255, 0.08)", // Borde suave
             boxShadow: "0 8px 32px 0 rgba(61, 58, 58, 0.37)", // Sombra para separar del fondo
@@ -201,16 +213,6 @@ export default function useMaterias() {
     );
   };
 
-  // Handlers React Flow
-  const onNodesChange: OnNodesChange<Node> = useCallback(
-    (changes) => setNodos((nds) => applyNodeChanges(changes, nds)),
-    [],
-  );
-  const onEdgesChange: OnEdgesChange = useCallback(
-    (changes) => setArcos((eds) => applyEdgeChanges(changes, eds)),
-    [],
-  );
-
   const resetearPosiciones = useCallback(() => {
     localStorage.removeItem("nodos-posiciones");
     setMaterias([...materias]); // Al resetear materias, el useEffect recalcula posiciones
@@ -258,6 +260,7 @@ export default function useMaterias() {
       }
     });
   };
+
   return {
     nodos,
     arcos,
