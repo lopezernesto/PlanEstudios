@@ -22,7 +22,7 @@ export default function useMaterias() {
 
   // --- Espacios entre cartas y años ---
   const ESPACIO_HORIZONTAL = 300;
-  const ESPACIO_VERTICAL_CUATRIMESTRE = 280;
+  const ESPACIO_VERTICAL_CUATRIMESTRE = 350;
   const ESPACIO_VERTICAL_AÑO = 100;
 
   // --- Estados ---
@@ -56,11 +56,21 @@ export default function useMaterias() {
           id: `e-${idPadre}-${m.id}-${esFinal ? "final" : "cursada"}`,
           source: idPadre,
           target: m.id,
-          style: {
-            stroke: "#94a3b8",
-            strokeDasharray: esFinal ? "5,5" : "0",
-          },
-          animated: esFinal ? true : false,
+          // interactionWidth aumenta el área donde el mouse detecta el arco
+          interactionWidth: 20,
+          className: "transition-all duration-300 stroke-[2px] cursor-pointer",
+          style: esFinal
+            ? {
+                stroke: "#94A3B8",
+                strokeDasharray: "5,5",
+                opacity: 0.3,
+              }
+            : {
+                stroke: "#94A3B8",
+                strokeDasharray: "0",
+                opacity: 0.5,
+              },
+          // animated: esFinal ? true : false,
         });
         m.correlativasCursada.forEach((idP) =>
           nuevosArcos.push(crearArco(idP, false)),

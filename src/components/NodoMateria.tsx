@@ -28,8 +28,53 @@ export function MateriaNode({ data }: MateriaNodeProps) {
   //Logicas para girar y para la animacion de materia desbloqueada
   const [isFlipped, setIsFlipped] = useState(false);
   const [isUnlocking, setIsUnlocking] = useState(false);
+  const [progresoAnterior, setProgresoAnterior] = useState(0);
+  //Logicas para los modales
   const [modalEdicion, setModalEdicion] = useState(false);
   const [modalEstados, setModalEstados] = useState<TipoModal>(null);
+  const [mostrarBarra, setMostrarBarra] = useState(true);
+
+  // Calcular progreso de correlativas
+  const calcularProgreso = () => {
+    const totalCorrelativas =
+      data.correlativasCursada.length + data.correlativasFinal.length;
+    if (totalCorrelativas === 0)
+      return { completadas: 0, total: 0, porcentaje: 0 };
+
+    const cursadasCompletadas = data.correlativasCursada.filter((idC) => {
+      const materia = data.todasLasMaterias.find((m) => m.id === idC);
+      return (
+        materia &&
+        (materia.estado === "CURSADA" || materia.estado === "APROBADA")
+      );
+    }).length;
+
+    const finalesCompletados = data.correlativasFinal.filter((idF) => {
+      const materia = data.todasLasMaterias.find((m) => m.id === idF);
+      return materia && materia.estado === "APROBADA";
+    }).length;
+
+    const completadas = cursadasCompletadas + finalesCompletados;
+    const porcentaje = (completadas / totalCorrelativas) * 100;
+
+    return { completadas, total: totalCorrelativas, porcentaje };
+  };
+
+  const progreso = calcularProgreso();
+  // Efecto para animar la barra al 100% antes de desaparecer
+  useEffect(() => {
+    if (data.estado === "BLOQUEADA") {
+      setMostrarBarra(true);
+      setProgresoAnterior(progreso.porcentaje);
+    } else if (data.estado === "HABILITADA" && progresoAnterior < 100) {
+      const timer = setTimeout(() => {
+        setMostrarBarra(false);
+      }, 800);
+      return () => clearTimeout(timer);
+    } else {
+      setMostrarBarra(false);
+    }
+  }, [data.estado, progreso.porcentaje, progresoAnterior]);
 
   // Efecto para cuando habilitas una materia
   useEffect(() => {
@@ -40,6 +85,15 @@ export function MateriaNode({ data }: MateriaNodeProps) {
     }
   }, [data.estado]);
 
+  // Efecto para cuando habilitas una materia
+  useEffect(() => {
+    if (data.estado === "HABILITADA") {
+      setIsUnlocking(true);
+      const timer = setTimeout(() => setIsUnlocking(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [data.estado]);
+  /*
   const colorClasses = {
     BLOQUEADA: "bg-slate-600 border-slate-800 text-slate-300",
     HABILITADA: `bg-blue-600 border-blue-900 text-white ${isUnlocking ? "animate-pulse shadow-[0_0_20px_rgba(37,99,235,0.8)]" : ""}`,
@@ -47,16 +101,16 @@ export function MateriaNode({ data }: MateriaNodeProps) {
     APROBADA: "bg-emerald-600 border-emerald-900 text-white",
   };
 
-  /*
-  const colorClasses = {
-  BLOQUEADA: "bg-slate-900/80 border-slate-800 text-slate-500",
-  HABILITADA: `bg-slate-900/80 border-cyan-500 text-cyan-400 ${
-    isUnlocking ? "animate-pulse shadow-[0_0_15px_rgba(6,182,212,0.4)]" : ""
-  }`,
-  CURSADA: "bg-slate-900/80 border-amber-500 text-amber-500",
-  APROBADA: "bg-slate-900/80 border-emerald-500 text-emerald-400",
-};
   */
+  const colorClasses = {
+    BLOQUEADA: "bg-slate-900/80 border-slate-800 text-slate-500",
+    HABILITADA: `bg-slate-900/80 border-cyan-500 text-cyan-400 ${
+      isUnlocking ? "animate-pulse shadow-[0_0_15px_rgba(6,182,212,0.4)]" : ""
+    }`,
+    CURSADA: "bg-slate-900/80 border-amber-500 text-amber-500",
+    APROBADA: "bg-slate-900/80 border-emerald-500 text-emerald-400",
+  };
+
   return (
     <div className="group w-48 h-64 perspective-1000">
       {/* Conectores para las flechas */}
@@ -147,7 +201,7 @@ export function MateriaNode({ data }: MateriaNodeProps) {
           ${
             data.estado === "HABILITADA"
               ? "bg-slate-800/50 text-slate-500 cursor-not-allowed"
-              : "bg-slate-700 hover:bg-rose-600 text-white shadow-md active:scale-90"
+              : "bg-slate-700 hover:bg-cyan-500 text-white shadow-md active:scale-90"
           }`}
                   title="Resetear Materia"
                 >
@@ -160,6 +214,24 @@ export function MateriaNode({ data }: MateriaNodeProps) {
               </div>
             )}
           </div>
+          {mostrarBarra && progreso.total > 0 && (
+            <div className="w-full px-2 space-y-1">
+              <div className="w-full bg-slate-800/50 rounded-full h-2 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-slate-600 to-slate-500 transition-all duration-500 ease-out"
+                  style={{
+                    width: `${data.estado === "HABILITADA" ? 100 : progreso.porcentaje}%`,
+                  }}
+                />
+              </div>
+              <div className="text-center text-[9px] opacity-50">
+                {data.estado === "HABILITADA"
+                  ? progreso.total
+                  : progreso.completadas}
+                /{progreso.total} correlativas
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Dorso de la carta */}
@@ -224,7 +296,7 @@ export function MateriaNode({ data }: MateriaNodeProps) {
           titulo="¿Reiniciar Materia?"
           mensaje="Volverá a estar bloqueada o disponible según sus correlativas."
           textoBoton="REINICIAR"
-          colorBoton="bg-amber-500"
+          colorBoton="bg-cyan-500"
           onConfirm={() => {
             data.resetear(data.id);
             setModalEstados(null);

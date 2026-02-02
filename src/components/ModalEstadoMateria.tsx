@@ -66,7 +66,7 @@ export function ModalAccionEstado({
               className={`px-8 py-3 rounded-xl font-bold text-white transition-all active:scale-95 ${
                 tipo === "APROBAR"
                   ? "bg-green-600 hover:bg-green-700"
-                  : "bg-blue-600 hover:bg-blue-700"
+                  : "bg-amber-500 hover:bg-amber-600"
               }`}
             >
               CONFIRMAR
