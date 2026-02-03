@@ -22,6 +22,10 @@ export default function App() {
     agregarMateria,
     obtenerMateriasPrevias,
     materias,
+    importarProgreso,
+    exportarProgreso,
+    cargarCarreraLCC,
+    resetKey,
   } = useMaterias();
 
   const initialViewport: Viewport = JSON.parse(
@@ -44,6 +48,7 @@ export default function App() {
       style={{ width: "100vw", height: "100vh", backgroundColor: "#000000" }}
     >
       <ReactFlow
+        key={resetKey}
         nodes={nodos}
         edges={arcos}
         nodeTypes={nodeTypes}
@@ -66,6 +71,9 @@ export default function App() {
           agregarMateria={agregarMateria}
           obtenerMateriasPrevias={obtenerMateriasPrevias}
           materias={materias}
+          exportarProgreso={exportarProgreso}
+          importarProgreso={importarProgreso}
+          cargarLCC={cargarCarreraLCC}
         />
       </ReactFlow>
     </div>

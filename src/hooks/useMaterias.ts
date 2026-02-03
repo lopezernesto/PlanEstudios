@@ -10,6 +10,7 @@ import {
 import { MateriaNode } from "../components/NodoMateria";
 import { AnioNode } from "../components/Separador";
 import { materiasIniciales } from "../data/MateriasIniciales";
+import { materiasLCC } from "../data/LCC";
 import type { EstadoMateria, MateriaData } from "../types/Materia";
 
 export default function useMaterias() {
@@ -20,7 +21,7 @@ export default function useMaterias() {
     [],
   );
 
-  // --- Espacios entre cartas y años ---
+  // --- Constantes de espacios entre cartas y años ---
   const ESPACIO_HORIZONTAL = 300;
   const ESPACIO_VERTICAL_CUATRIMESTRE = 350;
   const ESPACIO_VERTICAL_AÑO = 100;
@@ -31,11 +32,14 @@ export default function useMaterias() {
     return guardado ? JSON.parse(guardado) : materiasIniciales;
   });
 
+  const [nodos, setNodos] = useState<Node[]>([]);
+  const [arcos, setArcos] = useState<Edge[]>([]);
+  // Key para forzar reset completo cuando cambia el dataset
+  const [resetKey, setResetKey] = useState(0);
+
   useEffect(() => {
     localStorage.setItem("materias-data", JSON.stringify(materias));
   }, [materias]);
-
-  const [arcos, setArcos] = useState<Edge[]>([]);
 
   // Handlers React Flow
   const onNodesChange: OnNodesChange<Node> = useCallback(
@@ -45,6 +49,172 @@ export default function useMaterias() {
   const onEdgesChange: OnEdgesChange = useCallback(
     (changes) => setArcos((eds) => applyEdgeChanges(changes, eds)),
     [],
+  );
+
+  // Recalcular estados para corregir correlatividades
+  const recalcularEstados = (lista: MateriaData[]): MateriaData[] => {
+    return lista.map((m) => {
+      if (m.estado === "APROBADA" || m.estado === "CURSADA") return { ...m };
+
+      const cursadasListas = m.correlativasCursada.every((idC) => {
+        const previa = lista.find((p) => p.id === idC);
+        return (
+          previa &&
+          (previa.estado === "CURSADA" || previa.estado === "APROBADA")
+        );
+      });
+
+      const finalesListos = m.correlativasFinal.every((idF) => {
+        const previa = lista.find((p) => p.id === idF);
+        return previa && previa.estado === "APROBADA";
+      });
+
+      if (cursadasListas && finalesListos) {
+        return {
+          ...m,
+          estado: m.estado === "BLOQUEADA" ? "HABILITADA" : m.estado,
+        };
+      } else {
+        return { ...m, estado: "BLOQUEADA" as EstadoMateria };
+      }
+    });
+  };
+
+  // ABM DE MATERIAS
+
+  // Agregar
+  const agregarMateria = (nuevaMateria: MateriaData) => {
+    setMaterias((prev) => [...prev, nuevaMateria]);
+  };
+  // Borrar
+  const borrarMateria = useCallback((idABorrar: string) => {
+    setMaterias((prevMaterias) => {
+      const listaSinMateria = prevMaterias.filter((m) => m.id !== idABorrar);
+      const listaLimpia = listaSinMateria.map((materia) => ({
+        ...materia,
+        correlativasCursada: materia.correlativasCursada.filter(
+          (id) => id !== idABorrar,
+        ),
+        correlativasFinal: materia.correlativasFinal.filter(
+          (id) => id !== idABorrar,
+        ),
+      }));
+      return recalcularEstados(listaLimpia);
+    });
+    const posiciones = JSON.parse(
+      localStorage.getItem("nodos-posiciones") || "{}",
+    );
+    delete posiciones[idABorrar];
+    localStorage.setItem("nodos-posiciones", JSON.stringify(posiciones));
+  }, []);
+
+  //Editar
+  const editarMateria = useCallback(
+    (id: string, dataActualizada: Partial<MateriaData>) => {
+      setMaterias((prev) => {
+        const materiaOriginal = prev.find((m) => m.id === id);
+        if (!materiaOriginal) return prev;
+
+        const materiaEditada = { ...materiaOriginal, ...dataActualizada };
+
+        // Verifico si cambio de año o cuatri
+        const cambioUbicacion =
+          materiaEditada.anio !== materiaOriginal.anio ||
+          materiaEditada.cuatrimestre !== materiaOriginal.cuatrimestre;
+
+        let nuevas = prev.map((m) => (m.id === id ? materiaEditada : m));
+
+        // Si cambio de ubicacion, verifico las correlativas de las demas materias
+        if (cambioUbicacion) {
+          nuevas = nuevas.map((materia) => {
+            // Si esta materia NO tiene a la editada como correlativa, no hacer nada
+            const tieneComoCorrelativa =
+              materia.correlativasCursada.includes(id) ||
+              materia.correlativasFinal.includes(id);
+
+            if (!tieneComoCorrelativa) return materia;
+
+            // Verifico que la materia editada siga siendo valida como correlativa
+            const esCorrelativaValida =
+              materiaEditada.anio < materia.anio ||
+              (materiaEditada.anio === materia.anio &&
+                materiaEditada.cuatrimestre < materia.cuatrimestre);
+
+            // Si no es valida, limpio las correlativas
+            if (!esCorrelativaValida) {
+              return {
+                ...materia,
+                correlativasCursada: materia.correlativasCursada.filter(
+                  (corrId) => corrId !== id,
+                ),
+                correlativasFinal: materia.correlativasFinal.filter(
+                  (corrId) => corrId !== id,
+                ),
+              };
+            }
+
+            return materia;
+          });
+        }
+
+        return recalcularEstados(nuevas);
+      });
+    },
+    [],
+  );
+  // Funciones para modificar el estado de las materias
+  const regularizarMateria = useCallback((id: string, anio: string) => {
+    setMaterias((prev) => {
+      const nuevas = prev.map((m) =>
+        m.id === id
+          ? { ...m, estado: "CURSADA" as EstadoMateria, anioCursada: anio }
+          : m,
+      );
+      return recalcularEstados(nuevas);
+    });
+  }, []);
+
+  const aprobarFinal = useCallback((id: string, anio: string, nota: number) => {
+    setMaterias((prev) => {
+      const nuevas = prev.map((m) =>
+        m.id === id
+          ? {
+              ...m,
+              estado: "APROBADA" as EstadoMateria,
+              anioFinal: anio,
+              nota: nota,
+            }
+          : m,
+      );
+      return recalcularEstados(nuevas);
+    });
+  }, []);
+
+  const resetearMateria = useCallback((id: string) => {
+    setMaterias((prev) => {
+      const nuevas = prev.map((m) =>
+        m.id === id
+          ? {
+              ...m,
+              estado: "BLOQUEADA" as EstadoMateria,
+              anioCursada: undefined,
+              anioFinal: undefined,
+              nota: undefined,
+            }
+          : m,
+      );
+      return recalcularEstados(nuevas);
+    });
+  }, []);
+
+  // Para el filtro de materias en el Sidebar, solo mostrara materias que pueden ser correlativas
+  const obtenerMateriasPrevias = useCallback(
+    (anio: number, cuatri: number) => {
+      return materias.filter(
+        (m) => m.anio < anio || (m.anio === anio && m.cuatrimestre < cuatri),
+      );
+    },
+    [materias],
   );
 
   //Logica de arcos automaticos
@@ -63,7 +233,7 @@ export default function useMaterias() {
             ? {
                 stroke: "#94A3B8",
                 strokeDasharray: "5,5",
-                opacity: 0.3,
+                opacity: 0.8,
               }
             : {
                 stroke: "#94A3B8",
@@ -157,8 +327,53 @@ export default function useMaterias() {
     [],
   );
 
-  // Nodos de materia (React Flow)
-  const [nodos, setNodos] = useState<Node[]>([]);
+  const resetearPosiciones = useCallback(() => {
+    localStorage.removeItem("nodos-posiciones");
+    setMaterias((prev) => [...prev]);
+  }, []);
+
+  const exportarProgreso = () => {
+    const dataStr = JSON.stringify(materias, null, 2);
+    const dataBlob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `progreso_lcc_${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const cargarCarreraLCC = useCallback(() => {
+    localStorage.removeItem("nodos-posiciones");
+    localStorage.removeItem("react-flow-viewport");
+    setNodos([]);
+    setArcos([]);
+    setResetKey((prev) => prev + 1);
+    setTimeout(() => {
+      setMaterias(materiasLCC);
+    }, 0);
+  }, []);
+
+  const importarProgreso = useCallback((file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const json = JSON.parse(e.target?.result as string);
+        localStorage.removeItem("nodos-posiciones");
+        localStorage.removeItem("react-flow-viewport");
+        setNodos([]);
+        setArcos([]);
+        setResetKey((prev) => prev + 1);
+        setTimeout(() => {
+          setMaterias(json);
+        }, 0);
+      } catch (err) {
+        alert("Error: El archivo no tiene un formato válido.");
+      }
+    };
+    reader.readAsText(file);
+  }, []);
 
   // Efecto para sincronizar Arcos y Nodos cuando cambian las materias
   useEffect(() => {
@@ -190,176 +405,17 @@ export default function useMaterias() {
     setArcos(generarArcosAutomaticos(materias));
   }, [
     materias,
+    resetKey,
     generarEstructuraDinamica,
     calcularPosicionRelativa,
     generarArcosAutomaticos,
+    regularizarMateria,
+    aprobarFinal,
+    resetearMateria,
+    borrarMateria,
+    editarMateria,
+    obtenerMateriasPrevias,
   ]);
-  // Funciones para modificar el estado de las materias
-  const regularizarMateria = useCallback((id: string, anio: string) => {
-    setMaterias((prev) => {
-      const nuevas = prev.map((m) =>
-        m.id === id
-          ? { ...m, estado: "CURSADA" as EstadoMateria, anioCursada: anio }
-          : m,
-      );
-      return recalcularEstados(nuevas);
-    });
-  }, []);
-
-  const aprobarFinal = useCallback((id: string, anio: string, nota: number) => {
-    setMaterias((prev) => {
-      const nuevas = prev.map((m) =>
-        m.id === id
-          ? {
-              ...m,
-              estado: "APROBADA" as EstadoMateria,
-              anioFinal: anio,
-              nota: nota,
-            }
-          : m,
-      );
-      return recalcularEstados(nuevas);
-    });
-  }, []);
-
-  const resetearMateria = useCallback((id: string) => {
-    setMaterias((prev) => {
-      const nuevas = prev.map((m) =>
-        m.id === id
-          ? {
-              ...m,
-              estado: "BLOQUEADA" as EstadoMateria,
-              anioCursada: undefined,
-              anioFinal: undefined,
-              nota: undefined,
-            }
-          : m,
-      );
-      return recalcularEstados(nuevas);
-    });
-  }, []);
-
-  // ABM DE MATERIAS
-  // Agregar
-  const agregarMateria = (nuevaMateria: MateriaData) => {
-    setMaterias((prev) => [...prev, nuevaMateria]);
-  };
-  // Borrar
-  const borrarMateria = useCallback((idABorrar: string) => {
-    setMaterias((prevMaterias) => {
-      const listaSinMateria = prevMaterias.filter((m) => m.id !== idABorrar);
-      const listaLimpia = listaSinMateria.map((materia) => ({
-        ...materia,
-        correlativasCursada: materia.correlativasCursada.filter(
-          (id) => id !== idABorrar,
-        ),
-        correlativasFinal: materia.correlativasFinal.filter(
-          (id) => id !== idABorrar,
-        ),
-      }));
-      return recalcularEstados(listaLimpia);
-    });
-    const posiciones = JSON.parse(
-      localStorage.getItem("nodos-posiciones") || "{}",
-    );
-    delete posiciones[idABorrar];
-    localStorage.setItem("nodos-posiciones", JSON.stringify(posiciones));
-  }, []);
-
-  //Editar
-  const editarMateria = useCallback(
-    (id: string, dataActualizada: Partial<MateriaData>) => {
-      setMaterias((prev) => {
-        const materiaOriginal = prev.find((m) => m.id === id);
-        if (!materiaOriginal) return prev;
-
-        const materiaEditada = { ...materiaOriginal, ...dataActualizada };
-
-        // Verifico si cambio de año o cuatri
-        const cambioUbicacion =
-          materiaEditada.anio !== materiaOriginal.anio ||
-          materiaEditada.cuatrimestre !== materiaOriginal.cuatrimestre;
-
-        let nuevas = prev.map((m) => (m.id === id ? materiaEditada : m));
-
-        // Si cambio de ubicacion, verifico las correlativas de las demas materias
-        if (cambioUbicacion) {
-          nuevas = nuevas.map((materia) => {
-            // Si esta materia NO tiene a la editada como correlativa, no hacer nada
-            const tieneComoCorrelativa =
-              materia.correlativasCursada.includes(id) ||
-              materia.correlativasFinal.includes(id);
-
-            if (!tieneComoCorrelativa) return materia;
-
-            // Verifico que la materia editada siga siendo valida como correlativa
-            const esCorrelativaValida =
-              materiaEditada.anio < materia.anio ||
-              (materiaEditada.anio === materia.anio &&
-                materiaEditada.cuatrimestre < materia.cuatrimestre);
-
-            // Si no es valida, limpio las correlativas
-            if (!esCorrelativaValida) {
-              return {
-                ...materia,
-                correlativasCursada: materia.correlativasCursada.filter(
-                  (corrId) => corrId !== id,
-                ),
-                correlativasFinal: materia.correlativasFinal.filter(
-                  (corrId) => corrId !== id,
-                ),
-              };
-            }
-
-            return materia;
-          });
-        }
-
-        return recalcularEstados(nuevas);
-      });
-    },
-    [],
-  );
-
-  // Para el filtro de materias en el Sidebar, solo mostrara materias que pueden ser correlativas
-  const obtenerMateriasPrevias = (anio: number, cuatri: number) => {
-    return materias.filter(
-      (m) => m.anio < anio || (m.anio === anio && m.cuatrimestre < cuatri),
-    );
-  };
-
-  const resetearPosiciones = useCallback(() => {
-    localStorage.removeItem("nodos-posiciones");
-    setMaterias([...materias]);
-  }, [materias]);
-
-  const recalcularEstados = (lista: MateriaData[]): MateriaData[] => {
-    return lista.map((m) => {
-      if (m.estado === "APROBADA") return { ...m };
-
-      const cursadasListas = m.correlativasCursada.every((idC) => {
-        const previa = lista.find((p) => p.id === idC);
-        return (
-          previa &&
-          (previa.estado === "CURSADA" || previa.estado === "APROBADA")
-        );
-      });
-
-      const finalesListos = m.correlativasFinal.every((idF) => {
-        const previa = lista.find((p) => p.id === idF);
-        return previa && previa.estado === "APROBADA";
-      });
-
-      if (cursadasListas && finalesListos) {
-        return {
-          ...m,
-          estado: m.estado === "BLOQUEADA" ? "HABILITADA" : m.estado,
-        };
-      } else {
-        return { ...m, estado: "BLOQUEADA" as EstadoMateria };
-      }
-    });
-  };
 
   return {
     nodos,
@@ -371,5 +427,9 @@ export default function useMaterias() {
     agregarMateria,
     obtenerMateriasPrevias,
     materias,
+    importarProgreso,
+    exportarProgreso,
+    cargarCarreraLCC,
+    resetKey,
   };
 }
