@@ -45,13 +45,6 @@ _Se planean agregar más carreras en futuras versiones_
 ![Modal de edición](./screenshots/ModalEditar.png)
 ![Sidebar de agregar materia](./screenshots/AgregarMateria.png)
 
-> **Nota**: Próximamente se agregarán capturas de pantalla mostrando:
->
-> - Vista general del plan completo
-> - Detalle de materias con diferentes estados
-> - Modales de edición y gestión
-> - Sistema de correlativas en acción
-
 ---
 
 ## 🛠️ Tecnologías
@@ -115,7 +108,7 @@ npm run lint     # Ejecuta el linter
 
 ### Primeros pasos
 
-1. **Cargar tu carrera**: Hacé click en el botón "LCC" del menú lateral para cargar el plan completo de Licenciatura en Ciencias de la Computación
+1. **Cargar la carrera**: Hacé click en el botón "LCC" del menú lateral para cargar el plan completo de Licenciatura en Ciencias de la Computación
 
 2. **Marcar progreso**: Click en las materias habilitadas para:
    - ✅ Regularizar (marcar como cursada)
@@ -176,34 +169,6 @@ UnlockU/
 ├── vite.config.ts
 └── README.md
 ```
-
----
-
-## 🎨 Personalización
-
-### Agregar tu propia carrera
-
-1. Creá un nuevo archivo en `src/data/` (ej: `MiCarrera.ts`)
-2. Seguí la estructura de `LCC.ts`:
-
-```typescript
-import type { MateriaData } from "../types/Materia";
-
-export const materiasMiCarrera: MateriaData[] = [
-  {
-    id: "1",
-    nombre: "Nombre de la materia",
-    anio: 1,
-    cuatrimestre: 1,
-    estado: "HABILITADA",
-    correlativasCursada: [], // IDs de materias que hay que cursar
-    correlativasFinal: [], // IDs de finales que hay que aprobar
-  },
-  // ... más materias
-];
-```
-
-3. Importala y agregá un botón en el menú para cargarla
 
 ---
 
