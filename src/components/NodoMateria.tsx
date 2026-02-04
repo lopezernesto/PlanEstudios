@@ -242,17 +242,92 @@ export function MateriaNode({ data }: MateriaNodeProps) {
           <h3 className="font-bold mb-3 text-center border-b pb-2">
             {data.nombre}
           </h3>
-          <div className="space-y-2 flex-1">
-            <p>
-              <strong>Año cursada:</strong> {data.anioCursada || "--"}
-            </p>
-            <p>
-              <strong>Año final:</strong> {data.anioFinal || "--"}
-            </p>
-            <p>
-              <strong>Nota:</strong> {data.nota || "--"}
-            </p>
-          </div>
+
+          {data.estado === "BLOQUEADA" && (
+            <div className="flex-1 overflow-y-auto space-y-2 text-[10px] leading-tight">
+              {/* Correlativas para cursar */}
+              {data.correlativasCursada.length > 0 && (
+                <div>
+                  <p className="font-semibold mb-0.5 text-amber-400 text-[11px]">
+                    Necesitas cursar:
+                  </p>
+                  <ul className="space-y-0.5 pl-1">
+                    {data.correlativasCursada.map((idC) => {
+                      const materia = data.todasLasMaterias.find(
+                        (m) => m.id === idC,
+                      );
+                      const completada =
+                        materia &&
+                        (materia.estado === "CURSADA" ||
+                          materia.estado === "APROBADA");
+                      return (
+                        <li
+                          key={idC}
+                          className={`flex items-start gap-1 leading-tight ${
+                            completada
+                              ? "text-emerald-400 line-through opacity-60"
+                              : ""
+                          }`}
+                        >
+                          <span className="text-[8px] mt-0.5 flex-shrink-0">
+                            {completada ? "✓" : "•"}
+                          </span>
+                          <span className="break-words">{materia?.nombre}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+
+              {/* Correlativas para rendir final */}
+              {data.correlativasFinal.length > 0 && (
+                <div>
+                  <p className="font-semibold mb-0.5 text-emerald-400 text-[11px]">
+                    Necesitas aprobar:
+                  </p>
+                  <ul className="space-y-0.5 pl-1">
+                    {data.correlativasFinal.map((idF) => {
+                      const materia = data.todasLasMaterias.find(
+                        (m) => m.id === idF,
+                      );
+                      const completada =
+                        materia && materia.estado === "APROBADA";
+                      return (
+                        <li
+                          key={idF}
+                          className={`flex items-start gap-1 leading-tight ${
+                            completada
+                              ? "text-emerald-400 line-through opacity-60"
+                              : ""
+                          }`}
+                        >
+                          <span className="text-[8px] mt-0.5 flex-shrink-0">
+                            {completada ? "✓" : "•"}
+                          </span>
+                          <span className="break-words">{materia?.nombre}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+          {data.estado !== "BLOQUEADA" && (
+            <div className="space-y-2 flex-1">
+              <p>
+                <strong>Año cursada:</strong> {data.anioCursada || "--"}
+              </p>
+              <p>
+                <strong>Año final:</strong> {data.anioFinal || "--"}
+              </p>
+              <p>
+                <strong>Nota:</strong> {data.nota || "--"}
+              </p>
+            </div>
+          )}
+
           <p className="text-xs text-center opacity-75 mt-2">
             Click para volver
           </p>

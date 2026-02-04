@@ -1,73 +1,229 @@
-# React + TypeScript + Vite
+# 🔓 UnlockU
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Control visual de correlativas para carreras universitarias**
 
-Currently, two official plugins are available:
+UnlockU es una aplicación web interactiva que te permite visualizar y gestionar el progreso de tu carrera universitaria. Marcá las materias que vas aprobando y observá cómo se desbloquean automáticamente las siguientes según sus correlatividades.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## ✨ Características
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- 🎯 **Visualización intuitiva**: Cada materia es una carta interactiva con información detallada
+- 🔗 **Correlativas automáticas**: El sistema calcula automáticamente qué materias podés cursar
+- 📊 **Estados visuales**: Bloqueada, Habilitada, Cursada y Aprobada con colores distintos
+- 💾 **Persistencia local**: Tu progreso se guarda automáticamente en el navegador
+- 📥 **Importar/Exportar**: Respaldá o compartí tu progreso en formato JSON
+- ✏️ **Totalmente editable**: Creá, editá y eliminá materias según tu plan de estudios
+- 🎨 **Interfaz moderna**: Diseño dark mode con animaciones fluidas
+- 📱 **Interactivo**: Arrastrá, hacé zoom y explorá tu plan de estudios libremente
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🎓 Plan de Estudios Incluido
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Actualmente incluye el plan de estudios completo de:
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **Licenciatura en Ciencias de la Computación** (Plan 1112/2013) - UNCo, Neuquén
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+_Se planean agregar más carreras en futuras versiones_
+
+---
+
+## 🚀 Demo
+
+### Vista General
+
+![Vista completa del plan](./screenshots/VistaGeneral.png)
+
+### Estados y Progreso
+
+![Diferentes estados](./screenshots/Estados.png)
+![Materias bloqueadas](./screenshots/Bloqueadas.png)
+
+### Gestión de Materias
+
+![Modal de edición](./screenshots/ModalEditar.png)
+![Sidebar de agregar materia](./screenshots/AgregarMateria.png)
+
+> **Nota**: Próximamente se agregarán capturas de pantalla mostrando:
+>
+> - Vista general del plan completo
+> - Detalle de materias con diferentes estados
+> - Modales de edición y gestión
+> - Sistema de correlativas en acción
+
+---
+
+## 🛠️ Tecnologías
+
+- **React 19** - Framework principal
+- **TypeScript** - Tipado estático
+- **Tailwind CSS** - Estilos y diseño
+- **ReactFlow** - Visualización de grafos y nodos
+- **Vite** - Build tool y dev server
+- **Lucide React** - Iconos
+- **LocalStorage** - Persistencia de datos
+
+---
+
+## 📦 Instalación
+
+### Prerrequisitos
+
+- Node.js (v18 o superior)
+- npm o yarn
+
+### Pasos
+
+1. **Clonar el repositorio**
+
+```bash
+git clone https://github.com/lopezernesto/UnlockU.git
+cd UnlockU
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. **Instalar dependencias**
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
+
+3. **Ejecutar en modo desarrollo**
+
+```bash
+npm run dev
+```
+
+4. **Abrir en el navegador**
+
+```
+http://localhost:5173
+```
+
+### Comandos disponibles
+
+```bash
+npm run dev      # Inicia el servidor de desarrollo
+npm run build    # Compila para producción
+npm run preview  # Preview de la build de producción
+npm run lint     # Ejecuta el linter
+```
+
+---
+
+## 💡 Uso
+
+### Primeros pasos
+
+1. **Cargar tu carrera**: Hacé click en el botón "LCC" del menú lateral para cargar el plan completo de Licenciatura en Ciencias de la Computación
+
+2. **Marcar progreso**: Click en las materias habilitadas para:
+   - ✅ Regularizar (marcar como cursada)
+   - 🏆 Aprobar final (cargar nota y año)
+   - 🔄 Resetear estado
+
+3. **Agregar materias personalizadas**: Usá el botón "+" para crear materias nuevas con sus correlativas
+
+4. **Editar materias**: Click en el ícono de lápiz para modificar nombre, año, cuatrimestre o correlativas
+
+5. **Exportar progreso**: Guardá tu progreso en un archivo JSON para respaldo
+
+6. **Importar progreso**: Cargá un archivo previamente exportado
+
+### Navegación
+
+- **Zoom**: Usá la rueda del mouse o los controles en pantalla
+- **Pan**: Arrastrá el fondo para moverte
+- **Resetear posición**: Botón de grilla en los controles
+
+### Estados de materias
+
+- 🔒 **Bloqueada** (gris): No cumple con las correlativas
+- 🔓 **Habilitada** (cyan): Podés cursarla
+- 📝 **Cursada** (amarillo): Ya la regularizaste
+- ✅ **Aprobada** (verde): Final aprobado
+
+---
+
+## 🗂️ Estructura del Proyecto
+
+```
+UnlockU/
+├── src/
+│   ├── components/          # Componentes React
+│   │   ├── Menu.tsx         # Menú lateral con acciones
+│   │   ├── NodoMateria.tsx  # Carta de materia individual
+│   │   ├── SidebarMateria.tsx    # Panel para agregar materias
+│   │   ├── ModalEditarMateria.tsx
+│   │   ├── ModalEstadoMateria.tsx
+│   │   ├── ModalConfirmacion.tsx
+│   │   └── Separador.tsx    # Títulos de año
+│   ├── hooks/
+│   │   └── useMaterias.ts   # Lógica principal del estado
+│   ├── types/
+│   │   └── Materia.ts       # Tipos TypeScript
+│   ├── data/
+│   │   ├── LCC.ts           # Plan de LCC completo
+│   │   └── MateriasIniciales.ts  # Datos de prueba
+│   ├── App.tsx              # Componente principal
+│   ├── main.tsx             # Entry point
+│   └── index.css            # Estilos globales
+├── screenshots/
+├── public/
+├── index.html
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+└── README.md
+```
+
+---
+
+## 🎨 Personalización
+
+### Agregar tu propia carrera
+
+1. Creá un nuevo archivo en `src/data/` (ej: `MiCarrera.ts`)
+2. Seguí la estructura de `LCC.ts`:
+
+```typescript
+import type { MateriaData } from "../types/Materia";
+
+export const materiasMiCarrera: MateriaData[] = [
+  {
+    id: "1",
+    nombre: "Nombre de la materia",
+    anio: 1,
+    cuatrimestre: 1,
+    estado: "HABILITADA",
+    correlativasCursada: [], // IDs de materias que hay que cursar
+    correlativasFinal: [], // IDs de finales que hay que aprobar
+  },
+  // ... más materias
+];
+```
+
+3. Importala y agregá un botón en el menú para cargarla
+
+---
+
+## 🤝 Contribuciones
+
+Este es un proyecto personal educativo. Si encontrás bugs o tenés sugerencias:
+
+1. Abrí un **Issue** describiendo el problema o mejora
+2. Si querés contribuir código, hacé un **Pull Request**
+
+---
+
+## 📝 Roadmap
+
+### Próximas funcionalidades planeadas:
+
+- [ ] Estadísticas de progreso (promedio, materias aprobadas, etc.)
+- [ ] Sistema de calificación de dificultad por materia
+- [ ] Más planes de estudio (otras carreras de UNCo)
+- [ ] Planificación de cuatrimestres futuros
+- [ ] Modo presentación (vista de solo lectura)
+
+---

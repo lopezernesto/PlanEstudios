@@ -217,7 +217,7 @@ export const materiasLCC: MateriaData[] = [
     cuatrimestre: 1,
     estado: "BLOQUEADA",
     correlativasCursada: ["11", "18"],
-    correlativasFinal: [],
+    correlativasFinal: ["6"],
   },
   {
     id: "24",
@@ -226,7 +226,7 @@ export const materiasLCC: MateriaData[] = [
     cuatrimestre: 1,
     estado: "BLOQUEADA",
     correlativasCursada: ["11", "18", "19"],
-    correlativasFinal: [],
+    correlativasFinal: ["10"],
   },
   // ===== Segundo Cuatrimestre =====
   {
@@ -414,8 +414,8 @@ export const materiasLCC: MateriaData[] = [
     anio: 5,
     cuatrimestre: 2,
     estado: "BLOQUEADA",
-    correlativasCursada: ["26"],
-    correlativasFinal: ["42"],
+    correlativasCursada: ["26", "42"],
+    correlativasFinal: [],
   },
   {
     id: "45",
