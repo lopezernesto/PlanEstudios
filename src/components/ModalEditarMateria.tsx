@@ -4,16 +4,16 @@ import type { MateriaData } from "../types/Materia";
 
 interface Props {
   materia: MateriaData | null; // null = modal cerrado
+  aniosDuracion: number;
   onClose: () => void;
   onGuardar: (id: string, cambios: Partial<MateriaData>) => void;
   obtenerMateriasPrevias: (anio: number, cuatri: number) => MateriaData[];
   todasLasMaterias: MateriaData[];
 }
 
-const MAX_ANIOS = 5;
-
 export default function ModalEditarMateria({
   materia,
+  aniosDuracion,
   onClose,
   onGuardar,
   obtenerMateriasPrevias,
@@ -53,7 +53,10 @@ export default function ModalEditarMateria({
     }
   }, [materia, todasLasMaterias]);
 
-  const aniosDisponibles = Array.from({ length: MAX_ANIOS }, (_, i) => i + 1);
+  const aniosDisponibles = Array.from(
+    { length: aniosDuracion },
+    (_, i) => i + 1,
+  );
 
   // Limpiar modal al cerrarlo
   useEffect(() => {

@@ -1,7 +1,8 @@
 // Materias y correlatividades – Lic. en Ciencias de la Computación (Plan 1112/2013)
 import type { MateriaData } from "../types/Materia";
+import type { CarreraData } from "../types/Carrera";
 
-export const materiasLCC: MateriaData[] = [
+const materiasLCC: MateriaData[] = [
   ////////////////// PRIMER AÑO //////////////////
   // ===== Primer Cuatrimestre =====
   {
@@ -445,3 +446,10 @@ export const materiasLCC: MateriaData[] = [
     correlativasFinal: ["29", "28"],
   },
 ];
+
+export const carreraLCC: CarreraData = {
+  id: "lcc",
+  nombre: "Licenciatura en Ciencias de la Computación",
+  aniosDuracion: 5,
+  materias: materiasLCC,
+};

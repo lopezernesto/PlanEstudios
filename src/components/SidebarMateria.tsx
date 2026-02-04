@@ -8,14 +8,16 @@ interface Props {
   onAgregar: (materia: MateriaData) => void;
   obtenerMateriasPrevias: (anio: number, cuatri: number) => MateriaData[];
   materias: MateriaData[];
+  aniosDuracion: number;
 }
-const MAX_ANIOS = 5;
+
 export default function SidebarMateria({
   isOpen,
   onClose,
   onAgregar,
   obtenerMateriasPrevias,
   materias,
+  aniosDuracion,
 }: Props) {
   //Logica para agregar materia y elegir correlativas(Cursada y Final)
   const [nombre, setNombre] = useState("");
@@ -31,7 +33,10 @@ export default function SidebarMateria({
 
   const [errorNombre, setErrorNombre] = useState<string | null>(null);
 
-  const aniosDisponibles = Array.from({ length: MAX_ANIOS }, (_, i) => i + 1);
+  const aniosDisponibles = Array.from(
+    { length: aniosDuracion },
+    (_, i) => i + 1,
+  );
 
   // Logica de filtrado para el buscador
   const sugerencias = useMemo(() => {

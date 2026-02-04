@@ -9,6 +9,8 @@ import "@xyflow/react/dist/style.css";
 import useMaterias from "./hooks/useMaterias";
 import { LayoutGrid } from "lucide-react";
 import Menu from "./components/Menu";
+import Header from "./components/Header";
+import MensajeBienvenida from "./components/Bienvenida";
 import { useCallback } from "react";
 
 export default function App() {
@@ -22,12 +24,17 @@ export default function App() {
     agregarMateria,
     obtenerMateriasPrevias,
     materias,
+    aniosDuracion,
+    carreraActual,
+    cambiarCarrera,
     importarProgreso,
     exportarProgreso,
     cargarCarreraLCC,
     cargarTecnicaturaADYSL,
     resetKey,
   } = useMaterias();
+
+  const hayCarrera = carreraActual !== null;
 
   const initialViewport: Viewport = JSON.parse(
     localStorage.getItem("react-flow-viewport") ||
@@ -37,6 +44,7 @@ export default function App() {
   const onMoveEnd = useCallback((_: any, viewport: Viewport) => {
     localStorage.setItem("react-flow-viewport", JSON.stringify(viewport));
   }, []);
+
   const onNodeDragStop = useCallback((_: any, node: any) => {
     const posiciones = JSON.parse(
       localStorage.getItem("nodos-posiciones") || "{}",
@@ -44,40 +52,54 @@ export default function App() {
     posiciones[node.id] = node.position;
     localStorage.setItem("nodos-posiciones", JSON.stringify(posiciones));
   }, []);
+
   return (
     <div
       style={{ width: "100vw", height: "100vh", backgroundColor: "#000000" }}
     >
-      <ReactFlow
-        key={resetKey}
-        nodes={nodos}
-        edges={arcos}
-        nodeTypes={nodeTypes}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        defaultViewport={initialViewport}
-        onMoveEnd={onMoveEnd}
-        minZoom={0.3}
-        maxZoom={1.5}
-        onNodeDragStop={onNodeDragStop}
-      >
-        <Background gap={20} />
+      {!hayCarrera && <MensajeBienvenida />}
 
-        <Controls>
-          <ControlButton onClick={resetearPosiciones} title="Reset Position">
-            <LayoutGrid size={16} />
-          </ControlButton>
-        </Controls>
-        <Menu
-          agregarMateria={agregarMateria}
-          obtenerMateriasPrevias={obtenerMateriasPrevias}
-          materias={materias}
-          exportarProgreso={exportarProgreso}
-          importarProgreso={importarProgreso}
-          cargarLCC={cargarCarreraLCC}
-          cargarADYSL={cargarTecnicaturaADYSL}
+      {hayCarrera && (
+        <Header
+          nombreCarrera={carreraActual.nombre}
+          onExportar={exportarProgreso}
+          onCambiarCarrera={cambiarCarrera}
         />
-      </ReactFlow>
+      )}
+
+      <Menu
+        hayCarrera={hayCarrera}
+        agregarMateria={agregarMateria}
+        obtenerMateriasPrevias={obtenerMateriasPrevias}
+        materias={materias}
+        aniosDuracion={aniosDuracion}
+        importarProgreso={importarProgreso}
+        cargarLCC={cargarCarreraLCC}
+        cargarADYSL={cargarTecnicaturaADYSL}
+      />
+      {hayCarrera && (
+        <ReactFlow
+          key={resetKey}
+          nodes={nodos}
+          edges={arcos}
+          nodeTypes={nodeTypes}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          defaultViewport={initialViewport}
+          onMoveEnd={onMoveEnd}
+          minZoom={0.3}
+          maxZoom={1.5}
+          onNodeDragStop={onNodeDragStop}
+        >
+          <Background gap={20} />
+
+          <Controls>
+            <ControlButton onClick={resetearPosiciones} title="Reset Position">
+              <LayoutGrid size={16} />
+            </ControlButton>
+          </Controls>
+        </ReactFlow>
+      )}
     </div>
   );
 }

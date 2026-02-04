@@ -14,6 +14,7 @@ export type TipoModal =
 
 interface MateriaNodeProps {
   data: MateriaData & {
+    aniosDuracion: number;
     regularizar: (id: string, anio: string) => void;
     aprobar: (id: string, anio: string, nota: number) => void;
     resetear: (id: string) => void;
@@ -61,6 +62,7 @@ export function MateriaNode({ data }: MateriaNodeProps) {
   };
 
   const progreso = calcularProgreso();
+
   // Efecto para animar la barra al 100% antes de desaparecer
   useEffect(() => {
     if (data.estado === "BLOQUEADA") {
@@ -342,6 +344,7 @@ export function MateriaNode({ data }: MateriaNodeProps) {
 
       {modalEdicion && (
         <ModalEditarMateria
+          aniosDuracion={data.aniosDuracion}
           materia={data}
           onClose={() => setModalEdicion(false)}
           onGuardar={data.editar}

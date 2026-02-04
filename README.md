@@ -33,6 +33,7 @@ _Se planean agregar más carreras en futuras versiones_
 
 ### Vista General
 
+![Vista completa del plan](./screenshots/Bienvenida.png)
 ![Vista completa del plan](./screenshots/VistaGeneral.png)
 
 ### Estados y Progreso
@@ -145,6 +146,8 @@ UnlockU/
 ├── src/
 │   ├── components/          # Componentes React
 │   │   ├── Menu.tsx         # Menú lateral con acciones
+│   │   ├── Bienvenida.tsx     #Para cuando no hay una carrera cargada
+│   │   ├── Header.tsx         # Nombre de la carrera + botones
 │   │   ├── NodoMateria.tsx  # Carta de materia individual
 │   │   ├── SidebarMateria.tsx    # Panel para agregar materias
 │   │   ├── ModalEditarMateria.tsx
@@ -154,9 +157,11 @@ UnlockU/
 │   ├── hooks/
 │   │   └── useMaterias.ts   # Lógica principal del estado
 │   ├── types/
-│   │   └── Materia.ts       # Tipos TypeScript
+│   │   ├── Carrera.ts
+│   │   └── Materia.ts
 │   ├── data/
 │   │   ├── LCC.ts           # Plan de LCC completo
+│   │   ├── TUADYSL.ts       # Plan de TUADYSL completo
 │   │   └── MateriasIniciales.ts  # Datos de prueba
 │   ├── App.tsx              # Componente principal
 │   ├── main.tsx             # Entry point

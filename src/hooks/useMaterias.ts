@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect, use } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import {
   applyEdgeChanges,
   applyNodeChanges,
@@ -9,10 +9,10 @@ import {
 } from "@xyflow/react";
 import { MateriaNode } from "../components/NodoMateria";
 import { AnioNode } from "../components/Separador";
-import { materiasIniciales } from "../data/MateriasIniciales";
-import { materiasLCC } from "../data/LCC";
+import { carreraLCC } from "../data/LCC";
 import type { EstadoMateria, MateriaData } from "../types/Materia";
-import { materiasTUADYSL } from "../data/TUADYSL";
+import { carreraTUADYSL } from "../data/TUADYSL";
+import type { CarreraData } from "../types/Carrera";
 
 export default function useMaterias() {
   //localStorage.clear(); //para hacer pruebas borrando todo
@@ -28,10 +28,13 @@ export default function useMaterias() {
   const ESPACIO_VERTICAL_AÑO = 100;
 
   // --- Estados ---
-  const [materias, setMaterias] = useState<MateriaData[]>(() => {
-    const guardado = localStorage.getItem("materias-data");
-    return guardado ? JSON.parse(guardado) : materiasIniciales;
+  const [carreraActual, setCarreraActual] = useState<CarreraData | null>(() => {
+    const guardado = localStorage.getItem("carrera-data");
+    return guardado ? JSON.parse(guardado) : null;
   });
+
+  const materias = carreraActual?.materias ?? [];
+  const aniosDuracion = carreraActual?.aniosDuracion || 5;
 
   const [nodos, setNodos] = useState<Node[]>([]);
   const [arcos, setArcos] = useState<Edge[]>([]);
@@ -39,8 +42,10 @@ export default function useMaterias() {
   const [resetKey, setResetKey] = useState(0);
 
   useEffect(() => {
-    localStorage.setItem("materias-data", JSON.stringify(materias));
-  }, [materias]);
+    if (carreraActual) {
+      localStorage.setItem("carrera-data", JSON.stringify(carreraActual));
+    }
+  }, [carreraActual]);
 
   // Handlers React Flow
   const onNodesChange: OnNodesChange<Node> = useCallback(
@@ -49,6 +54,21 @@ export default function useMaterias() {
   );
   const onEdgesChange: OnEdgesChange = useCallback(
     (changes) => setArcos((eds) => applyEdgeChanges(changes, eds)),
+    [],
+  );
+
+  const setMaterias = useCallback(
+    (updateFn: (prev: MateriaData[]) => MateriaData[]) => {
+      setCarreraActual((prev) => {
+        if (!prev) return null;
+
+        const nuevasMaterias = updateFn(prev.materias);
+        return {
+          ...prev,
+          materias: recalcularEstados(nuevasMaterias),
+        };
+      });
+    },
     [],
   );
 
@@ -337,7 +357,7 @@ export default function useMaterias() {
   }, []);
 
   const exportarProgreso = () => {
-    const dataStr = JSON.stringify(materias, null, 2);
+    const dataStr = JSON.stringify(carreraActual, null, 2);
     const dataBlob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(dataBlob);
 
@@ -355,7 +375,7 @@ export default function useMaterias() {
     setArcos([]);
     setResetKey((prev) => prev + 1);
     setTimeout(() => {
-      setMaterias(materiasLCC);
+      setCarreraActual(carreraLCC);
     }, 0);
   }, []);
   const cargarTecnicaturaADYSL = useCallback(() => {
@@ -365,7 +385,7 @@ export default function useMaterias() {
     setArcos([]);
     setResetKey((prev) => prev + 1);
     setTimeout(() => {
-      setMaterias(materiasTUADYSL);
+      setCarreraActual(carreraTUADYSL);
     }, 0);
   }, []);
 
@@ -380,7 +400,7 @@ export default function useMaterias() {
         setArcos([]);
         setResetKey((prev) => prev + 1);
         setTimeout(() => {
-          setMaterias(json);
+          setCarreraActual(json);
         }, 0);
       } catch (err) {
         alert("Error: El archivo no tiene un formato válido.");
@@ -391,6 +411,11 @@ export default function useMaterias() {
 
   // Efecto para sincronizar Arcos y Nodos cuando cambian las materias
   useEffect(() => {
+    if (!carreraActual || materias.length === 0) {
+      setNodos([]);
+      setArcos([]);
+      return;
+    }
     const estructura = generarEstructuraDinamica(materias);
     const posicionesGuardadas = JSON.parse(
       localStorage.getItem("nodos-posiciones") || "{}",
@@ -405,6 +430,7 @@ export default function useMaterias() {
         posicionesGuardadas[m.id] || calcularPosicionRelativa(m, materias),
       data: {
         ...m,
+        aniosDuracion: aniosDuracion,
         regularizar: regularizarMateria,
         aprobar: aprobarFinal,
         resetear: resetearMateria,
@@ -418,6 +444,7 @@ export default function useMaterias() {
     setNodos([...estructura, ...nodosMaterias]);
     setArcos(generarArcosAutomaticos(materias));
   }, [
+    carreraActual,
     materias,
     resetKey,
     generarEstructuraDinamica,
@@ -431,6 +458,18 @@ export default function useMaterias() {
     obtenerMateriasPrevias,
   ]);
 
+  const cambiarCarrera = useCallback(() => {
+    localStorage.removeItem("nodos-posiciones");
+    localStorage.removeItem("react-flow-viewport");
+    localStorage.removeItem("carrera-data");
+    setNodos([]);
+    setArcos([]);
+    setResetKey((prev) => prev + 1);
+    setTimeout(() => {
+      setCarreraActual(null);
+    }, 0);
+  }, []);
+
   return {
     nodos,
     arcos,
@@ -441,6 +480,9 @@ export default function useMaterias() {
     agregarMateria,
     obtenerMateriasPrevias,
     materias,
+    aniosDuracion,
+    carreraActual,
+    cambiarCarrera,
     importarProgreso,
     exportarProgreso,
     cargarCarreraLCC,

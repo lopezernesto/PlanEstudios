@@ -1,7 +1,10 @@
+import type { CarreraData } from "../types/Carrera";
 import type { MateriaData } from "../types/Materia";
 
-export const materiasTUADYSL: MateriaData[] = [
+const materiasTUADYSL: MateriaData[] = [
   {
+    ////////////////// PRIMER AÑO //////////////////
+    // ===== Primer Cuatrimestre =====
     id: "1",
     nombre: "Introducción a la Computación",
     anio: 1,
@@ -28,6 +31,7 @@ export const materiasTUADYSL: MateriaData[] = [
     correlativasCursada: [],
     correlativasFinal: [],
   },
+  // ===== Segundo Cuatrimestre =====
   {
     id: "4",
     nombre: "Introducción a la Programación",
@@ -55,6 +59,8 @@ export const materiasTUADYSL: MateriaData[] = [
     correlativasCursada: ["1", "2"],
     correlativasFinal: [],
   },
+  ////////////////// SEGUNDO AÑO //////////////////
+  // ===== Primer Cuatrimestre =====
   {
     id: "7",
     nombre: "Software Libre",
@@ -82,6 +88,7 @@ export const materiasTUADYSL: MateriaData[] = [
     correlativasCursada: ["4", "6"],
     correlativasFinal: [],
   },
+  // ===== Segundo Cuatrimestre =====
   {
     id: "10",
     nombre: "Administración de Servicios",
@@ -109,6 +116,8 @@ export const materiasTUADYSL: MateriaData[] = [
     correlativasCursada: ["4", "5", "9"],
     correlativasFinal: [],
   },
+  ////////////////// TERCER AÑO //////////////////
+  // ===== Primer Cuatrimestre =====
   {
     id: "13",
     nombre: "Administración de Sistemas Avanzada",
@@ -137,3 +146,11 @@ export const materiasTUADYSL: MateriaData[] = [
     correlativasFinal: [],
   },
 ];
+
+export const carreraTUADYSL: CarreraData = {
+  id: "tuadysl",
+  nombre:
+    "Tecnicatura Universitaria en Administración de Sistemas y Software Libre",
+  aniosDuracion: 3,
+  materias: materiasTUADYSL,
+};

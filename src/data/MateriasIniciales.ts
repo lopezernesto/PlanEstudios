@@ -1,6 +1,8 @@
+import type { CarreraData } from "../types/Carrera";
 import type { MateriaData } from "../types/Materia";
+// Materias iniciales para pruebas
 
-export const materiasIniciales: MateriaData[] = [
+const materiasIniciales: MateriaData[] = [
   {
     id: "1",
     nombre: "Introducción a la Computación",
@@ -95,3 +97,10 @@ export const materiasIniciales: MateriaData[] = [
     correlativasFinal: ["1"],
   },
 ];
+export const carreraPrueba: CarreraData = {
+  id: "tuadysl",
+  nombre:
+    "Tecnicatura Universitaria en Administración de Sistemas y Software Libre",
+  aniosDuracion: 3,
+  materias: materiasIniciales,
+};
